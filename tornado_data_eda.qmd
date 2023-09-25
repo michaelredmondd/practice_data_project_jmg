@@ -1,0 +1,42 @@
+---
+title: "Tornado Data EDA"
+author: "JMG"
+format: html
+---
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggthemes)
+
+theme_set(theme_minimal(base_size = 12))
+```
+
+
+
+## The Data
+
+Let's load the data:
+
+```{r}
+tornados <- read_csv("data/tornados.csv")
+```
+
+Check what we read in
+
+```{r}
+glimpse(tornados)
+```
+
+
+
+
+
+
+
+
+
+
