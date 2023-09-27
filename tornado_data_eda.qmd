@@ -19,6 +19,8 @@ theme_set(theme_minimal(base_size = 12))
 
 ## The Data
 
+We obtained the raw data from [here(https://www.spc.noaa.gov/wcm/data/1950-2022_actual_tornadoes.csv)]. It contains observations about tornado events from 1950-2022. The data is downloaded in the R script "get_tornados_data.R". The cleaned data is saved in the data folder as "tornados.csv"
+
 Let's load the data:
 
 ```{r}
@@ -31,12 +33,118 @@ Check what we read in
 glimpse(tornados)
 ```
 
+This data contains 68,693 rows and 27 columns (variables).
+
+## Exploratory Data Analysis
+
+Initial examination of entire data 
+```{r}
+skimr::skim(tornados)
+```
+
+Note: There are a lot of missing values for "loss" and a fair number for "mag" as well. 
+
+```{r}
+tornados %>%
+  ggplot(aes(x = st)) + 
+  geom_bar() + 
+  coord_flip()
+```
+
+Note that there are 50 states and 3 territories included.
+
+```{r}
+tornados %>%
+  ggplot(aes(x=slon,y=slat)) + 
+  geom_point(alpha=0.1)
+```
+
+```{r}
+states_df <- map_data("state")
+```
+
+```{r}
+ggplot() + 
+  geom_polygon(data=states_df,
+               mapping = aes(long,lat,group=group),
+               fill="white",color="darkgray")
+```
+
+Build our map data and filter out AK, HI, PR, and VI
+
+```{r}
+tornados_49 <- tornados %>%
+  filter(st != "AK", st != "HI",st!= "PR", st!= "VI")
+```
+
+```{r}
+tornados_49 %>%
+  ggplot(aes(x = st)) + 
+  geom_bar() + 
+  coord_flip()
+```
+
+From which we see the states with the most tornados:
+
+```{r}
+tornados_49 %>%
+  group_by(st) %>%
+  summarise(per_state = n()) %>%
+  arrange(desc(per_state)) %>%
+  ggplot(aes(x=reorder(st,per_state),y=per_state)) + 
+  geom_bar(stat = "identity") + 
+  coord_flip()
+```
+
+Filter out (that is, remove) those observations where the ending latitude or longitude is 0.
+
+```{r}
+tornados_49 <- tornados_49 %>%
+  filter(elat > 0 & elon < 0)
+```
+
+```{r}
+tornados_49 %>%
+  ggplot() + 
+  geom_polygon(data=states_df,
+               mapping = aes(long,lat,group=group),
+               fill="white",color="darkgray") + 
+  geom_segment(aes(x=slon,y=slat,xend=elon,yend=elat), alpha=0.2)
+```
 
 
+Remove observations from the West. 
+
+```{r}
+tornados_49 <- tornados_49 %>%
+  filter(slon >= -105)
+
+states_df <- states_df %>%
+  filter(long >= -105)
+```
 
 
+```{r}
+tornados_49 %>%
+  ggplot() + 
+  geom_polygon(data=states_df,
+               mapping = aes(long,lat,group=group),
+               fill="white",color="darkgray") + 
+  geom_segment(aes(x=slon,y=slat,xend=elon,yend=elat),alpha=0.5,color="darkgreen")
+```
 
+Frequency of tornados by year.
+```{r}
+tornados_49 %>%
+  ggplot(aes(x= yr)) + 
+  geom_bar()
+```
 
+Tornados by month. 
 
-
+```{r}
+tornados_49 %>%
+  ggplot(aes(x=mo)) + 
+  geom_bar()
+```
 
