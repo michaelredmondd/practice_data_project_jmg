@@ -220,17 +220,3 @@ tornados_49 %>%
   geom_boxplot() 
 
 ```
-```{r}
-tornados_49 %>%
-  filter(!is.na(mag)) %>%
-  mutate(mag=factor(mag), mo=factor(mo)) %>%
-  ggplot(aes(x=mo,fill=mag)) +
-  geom_bar() +
-  scale_y_log10()
-```
-
-
-
-
-
-
